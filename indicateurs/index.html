@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FICTIF - MTN CI - 22.1 Tableau de bord du service client</title>
+<style>
+:root {
+  --primaire: #FFCB05; --secondaire: #1D1D1B; --accent: #006E96;
+  --sur-primaire: #000000; --titres: #1D1D1B; --texte: #1F2328; --doux: #5B6168;
+  --fond: #FFFFFF; --fond-doux: #FFFBEB; --fond-doux2: #E4E4E4; --trait: #FFF2C0;
+  --alerte: #B42318; --ok: #1A7F37;
+  --police-titres: 'Arial', 'Segoe UI', Arial, sans-serif; --police-texte: 'Arial', 'Segoe UI', Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fond-doux); color: var(--texte); font-family: var(--police-texte); font-size: 15px; line-height: 1.45; }
+header { background: var(--primaire); border-top: 6px solid var(--primaire); border-bottom: 1px solid var(--trait); padding: 14px 16px; }
+.barre { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+header img { height: 44px; width: auto; display: block; }
+header .per { text-align: right; color: #1D1D1B; font-size: 13px; }
+header .per b { display: block; font-family: var(--police-titres); color: var(--titres); font-size: 19px; }
+main { max-width: 1180px; margin: 0 auto; padding: 16px; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+.kpi { background: var(--fond); border-top: 4px solid var(--primaire); padding: 14px; border-radius: 4px; min-width: 0; }
+.kpi.alerte { border-top-color: var(--alerte); }
+.kpi .lib { color: var(--doux); font-size: 13px; }
+.kpi .val { font-family: var(--police-titres); color: var(--titres); font-size: 30px; font-weight: 700; margin: 2px 0; white-space: nowrap; }
+.kpi.alerte .val { color: var(--alerte); }
+.kpi .com { font-size: 13px; }
+.grille { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 12px; }
+.carte { background: var(--fond); padding: 14px 16px; border-radius: 4px; margin-bottom: 12px; min-width: 0; }
+h2 { font-family: var(--police-titres); color: var(--titres); font-size: 17px; margin: 0 0 10px; }
+.note { color: var(--doux); font-size: 12px; margin: 8px 0 0; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; background: var(--primaire); color: var(--sur-primaire); padding: 7px 8px; font-weight: 600; font-size: 13px; }
+td { padding: 7px 8px; border-bottom: 1px solid var(--trait); vertical-align: top; }
+td.n, th.n { text-align: right; white-space: nowrap; }
+.rouge { color: var(--alerte); font-weight: 700; }
+.ok { color: var(--ok); font-weight: 600; }
+.doux { color: var(--doux); font-size: 13px; }
+.semaines { display: flex; align-items: flex-end; gap: 3px; height: 30px; min-width: 64px; }
+.semaines span { flex: 1; background: var(--trait); border-radius: 2px 2px 0 0; min-height: 2px; }
+.semaines span:last-child { background: var(--primaire); }
+tr.franchi .semaines span:last-child { background: var(--alerte); }
+.barres { list-style: none; margin: 0; padding: 0; }
+.barres li { margin: 0 0 9px; }
+.barres .lig { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+.barres .lig b { white-space: nowrap; }
+.barres .fond { background: var(--fond-doux); height: 10px; border-radius: 5px; overflow: hidden; margin-top: 3px; }
+.barres .plein { background: var(--primaire); height: 100%; border-radius: 5px; }
+.barres li.haut .plein { background: var(--accent); }
+.liste { list-style: none; margin: 0; padding: 0; }
+.liste li { border-left: 4px solid var(--alerte); background: var(--fond); padding: 6px 10px; margin-bottom: 8px; border-bottom: 1px solid var(--trait); }
+.liste li.orange { border-left-color: var(--secondaire); }
+.liste .ref { font-weight: 700; }
+.etiq { display: inline-block; white-space: nowrap; font-size: 12px; font-weight: 700; padding: 1px 7px; border-radius: 10px; background: var(--fond-doux2); color: var(--texte); }
+.etiq.r { background: var(--alerte); color: #fff; }
+.niveaux { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.niveaux div { background: var(--fond-doux); border-radius: 4px; padding: 8px; text-align: center; }
+.niveaux b { display: block; font-family: var(--police-titres); font-size: 24px; color: var(--titres); }
+footer { max-width: 1180px; margin: 0 auto; padding: 4px 16px 24px; color: var(--doux); font-size: 12px; }
+.tableau-large { overflow-x: auto; }
+@media (max-width: 860px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .grille { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 480px) {
+  main { padding: 12px 16px; } .kpis { gap: 8px; } .kpi { padding: 10px; } .kpi .val { font-size: 24px; }
+  header .per { text-align: left; } td .etiq { white-space: normal; } .col-def { display: none; } table { font-size: 13px; } td, th { padding: 6px 5px; }
+}
+</style>
+</head>
+<body><div style="background:#c00;color:#fff;font-weight:bold;text-align:center;padding:8px 12px;font-family:Arial;font-size:14px">FICTIF : tableau de bord d'entraînement. Personnes, numéros de dossier et chiffres internes inventés ; seuls les contacts publics de mtn.ci sont réels. Page non référencée.</div>
+<header><div class="barre">
+  <img src="../assets/logo-sur-jaune.png" alt="MTN Côte d&#39;Ivoire">
+  <div class="per"><b>Service client MTN CI (FICTIF)</b>Édité le 16/10/2026 à 7 h</div>
+</div></header>
+<main>
+  <section class="kpis">
+    <div class="kpi"><div class="lib">Demandes ouvertes</div><div class="val">10</div>
+      <div class="com">dont 4 de niveau critique</div></div>
+    <div class="kpi alerte"><div class="lib">En retard</div>
+      <div class="val">4</div>
+      <div class="com">3 sur une promesse faite au client, 1 sur l'engagement</div></div>
+<div class="kpi alerte"><div class="lib">Délai médian de première réponse, S41</div>
+      <div class="val">6,3 h</div>
+      <div class="com">objectif 4,0 h, seuil d'alerte 6,0 h</div></div><div class="kpi"><div class="lib">Promesses tenues à la date promise, S41</div>
+      <div class="val">81 %</div>
+      <div class="com">243 sur 300 (FICTIF), objectif 90 %</div></div>  </section>
+
+  <div class="grille">
+    <div>
+      <div class="carte"><h2>Indicateurs de la semaine S41</h2>
+        <div class="tableau-large"><table>
+          <tr><th>Indicateur</th><th>4 semaines</th><th class="n">S41</th><th class="n col-def">Objectif</th><th>Alerte</th></tr>
+          <tr class="franchi"><td>Délai médian de première réponse</td>
+            <td><div class="semaines" title="S38 : 5,2, S39 : 4,9, S40 : 5,6, S41 : 6,3"><span style="height:83.0%"></span><span style="height:78.0%"></span><span style="height:89.0%"></span><span style="height:100.0%"></span></div></td>
+            <td class="n"><b>6,3</b></td>
+            <td class="n col-def">4,0</td>
+            <td><span class="etiq r">seuil franchi</span></td></tr>
+          <tr class="franchi"><td>Réponses dans le délai de l&#39;engagement</td>
+            <td><div class="semaines" title="S38 : 81 %, S39 : 83 %, S40 : 79 %, S41 : 72 %"><span style="height:98.0%"></span><span style="height:100.0%"></span><span style="height:95.0%"></span><span style="height:87.0%"></span></div></td>
+            <td class="n"><b>72 %</b></td>
+            <td class="n col-def">90 %</td>
+            <td><span class="etiq r">seuil franchi</span></td></tr>
+          <tr><td>Délai médian de résolution</td>
+            <td><div class="semaines" title="S38 : 2,4, S39 : 2,2, S40 : 2,6, S41 : 2,9"><span style="height:83.0%"></span><span style="height:76.0%"></span><span style="height:90.0%"></span><span style="height:100.0%"></span></div></td>
+            <td class="n"><b>2,9</b></td>
+            <td class="n col-def">2,0</td>
+            <td><span class="ok">non</span></td></tr>
+          <tr class="franchi"><td>Réclamations ouvertes en retard sur l&#39;engagement</td>
+            <td><div class="semaines" title="S38 : 212, S39 : 190, S40 : 236, S41 : 318"><span style="height:67.0%"></span><span style="height:60.0%"></span><span style="height:74.0%"></span><span style="height:100.0%"></span></div></td>
+            <td class="n"><b>318</b></td>
+            <td class="n col-def">150</td>
+            <td><span class="etiq r">seuil franchi</span></td></tr>
+          <tr><td>Réclamations closes sans relance du client</td>
+            <td><div class="semaines" title="S38 : 68 %, S39 : 70 %, S40 : 69 %, S41 : 66 %"><span style="height:97.0%"></span><span style="height:100.0%"></span><span style="height:99.0%"></span><span style="height:94.0%"></span></div></td>
+            <td class="n"><b>66 %</b></td>
+            <td class="n col-def">75 %</td>
+            <td><span class="ok">non</span></td></tr>
+          <tr><td>Promesses tenues à la date promise</td>
+            <td><div class="semaines" title="S38 : 86 %, S39 : 88 %, S40 : 84 %, S41 : 81 %"><span style="height:98.0%"></span><span style="height:100.0%"></span><span style="height:95.0%"></span><span style="height:92.0%"></span></div></td>
+            <td class="n"><b>81 %</b></td>
+            <td class="n col-def">90 %</td>
+            <td><span class="ok">non</span></td></tr>
+          <tr><td>Réclamations reçues</td>
+            <td><div class="semaines" title="S38 : 4 120, S39 : 4 310, S40 : 4 050, S41 : 4 680"><span style="height:88.0%"></span><span style="height:92.0%"></span><span style="height:87.0%"></span><span style="height:100.0%"></span></div></td>
+            <td class="n"><b>4 680</b></td>
+            <td class="n col-def"><span class="doux">à fixer</span></td>
+            <td><span class="doux">pas de seuil</span></td></tr>
+          <tr><td>Plaintes reçues de l&#39;ARTCI</td>
+            <td><div class="semaines" title="S38 : 3, S39 : 2, S40 : 4, S41 : 4"><span style="height:75.0%"></span><span style="height:50.0%"></span><span style="height:100.0%"></span><span style="height:100.0%"></span></div></td>
+            <td class="n"><b>4</b></td>
+            <td class="n col-def"><span class="doux">à fixer</span></td>
+            <td><span class="doux">pas de seuil</span></td></tr>
+        </table></div>
+        <p class="note">Relevé du 16/10/2026 à 6 h 30. Définitions : Dictionnaire des indicateurs du service client MTN CI, version 1 FICTIVE du 16/10/2026 (test 21.1). Sources : FICTIF : outil de gestion des réclamations (extraction du 12/10 à 6 h), file WhatsApp de la cellule digitale, suivi des promesses.</p>
+      </div>
+
+      <div class="carte"><h2>Causes des réclamations, septembre 2026 (FICTIF)</h2>
+        <ul class="barres">
+          <li class="haut"><div class="lig"><span>Transaction MoMo échouée ou mal routée</span><b>5210 <span class="doux">(+580)</span></b></div>
+            <div class="fond"><div class="plein" style="width:100.0%"></div></div></li>
+          <li class="haut"><div class="lig"><span>Crédit ou forfait débité sans service</span><b>4380 <span class="doux">(+460)</span></b></div>
+            <div class="fond"><div class="plein" style="width:84.0%"></div></div></li>
+          <li><div class="lig"><span>Coupure ou lenteur réseau</span><b>3260 <span class="doux">(-150)</span></b></div>
+            <div class="fond"><div class="plein" style="width:63.0%"></div></div></li>
+          <li><div class="lig"><span>SIM (swap, identification, blocage)</span><b>2140 <span class="doux">(-70)</span></b></div>
+            <div class="fond"><div class="plein" style="width:41.0%"></div></div></li>
+          <li class="haut"><div class="lig"><span>Box internet / fibre en panne</span><b>1350 <span class="doux">(+170)</span></b></div>
+            <div class="fond"><div class="plein" style="width:26.0%"></div></div></li>
+          <li class="haut"><div class="lig"><span>Erreur de facturation</span><b>820 <span class="doux">(+60)</span></b></div>
+            <div class="fond"><div class="plein" style="width:16.0%"></div></div></li>
+        </ul>
+        <p class="note">18170 réclamations en septembre contre 17010 en août (FICTIF) ; entre parenthèses, l'écart par cause. En bleu, les causes en hausse.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="carte"><h2>À traiter en premier</h2>
+        <ul class="liste">
+          <li><span class="ref">RC-MTN-2610-0398</span> <span class="etiq r">2 jours de retard sur la promesse</span><br>
+            Prisca N&#39;Dri (FICTIF) : box fibre hors service depuis le 08/10<br><span class="doux">Ibrahim Touré (FICTIF), passage du technicien</span></li>
+          <li><span class="ref">RC-MTN-2610-0423</span> <span class="etiq r">1 jour de retard sur la promesse</span><br>
+            Boutique Chez Tanti Rose (marchand MoMo) (FICTIF) : transfert MoMo envoyé au mauvais numéro<br><span class="doux">Fatou Bamba (FICTIF), obtenir le retour de la cellule MoMo sur le blocage des fonds</span></li>
+          <li><span class="ref">RC-MTN-2610-0411</span> <span class="etiq r">1 jour de retard sur la promesse</span><br>
+            Awa Traoré (FICTIF) : forfait appels débité deux fois<br><span class="doux">Yao Kouamé (FICTIF), vérifier le journal de souscription</span></li>
+          <li><span class="ref">RC-MTN-2610-0402</span> <span class="etiq r">1 jour de retard sur l&#39;engagement</span><br>
+            Moussa Ouattara (FICTIF) : lenteur internet persistante à Bouaké<br><span class="doux">Serge Yao (FICTIF), obtenir le diagnostic de la cellule réseau</span></li>
+          <li class="orange"><span class="ref">RC-MTN-2610-0428</span> <span class="etiq">sans porteur</span><br>
+            Adjoa Konan (FICTIF) : demande de relevé MoMo de septembre</li>
+        </ul>
+        <p class="note">État des demandes au 16/10/2026 à 7 h.</p>
+      </div>
+
+      <div class="carte"><h2>Demandes ouvertes par niveau</h2>
+        <div class="niveaux">
+<div><b>4</b>N1, critique</div><div><b>3</b>N2, élevé</div><div><b>3</b>N3, normal</div>        </div>
+        <p class="note">Niveaux de l'engagement de service ES-MTNCI-FICTIF version 2.</p>
+      </div>
+
+      <div class="carte"><h2>Proposé pour la semaine qui vient</h2>
+        <ul class="liste"><li class="orange">Renfort de deux conseillers sur la cellule WhatsApp de 7 h à 11 h le lundi et le mardi<br><span class="doux">Aya Koné (FICTIF), avant le 19/10/2026, accord à obtenir</span></li><li class="orange">Revue des 194 dossiers en attente du réseau ou de MoMo avec le palier 2<br><span class="doux">Serge Yao (FICTIF), avant le 20/10/2026, accord à obtenir</span></li></ul>
+      </div>    </div>
+  </div>
+</main>
+<section style="max-width:1180px;margin:0 auto 12px;padding:0 16px"><div class="carte" style="border-left:6px solid #FFCB05"><h2>Suite proposée (sur accord, rien n'est lancé)</h2><ol><li>Note de commentaire d'écart sur les trois seuils franchis en S41.</li><li>Note de causes récurrentes de septembre, adressée au réseau et à la cellule MoMo.</li><li>Décisions de la dirigeante : renfort WhatsApp de 7 h à 11 h, objectifs pour les réclamations reçues et les plaintes ARTCI. Sur accord du Directeur général (FICTIF).</li></ol><p class="note">Rapport mensuel complet : PDF du test 22.1. Mise à jour : chaque lundi 7 h par Awa depuis le classeur des indicateurs (couche saisie, calcul, affichage).</p></div></section><footer>FICTIF. Indicateurs de la semaine 41 (relevé du 16/10), extrait de dix demandes ouvertes au 16/10 à 7 h, causes du mois de septembre 2026.<br>MTN Côte d&#39;Ivoire, document de test FICTIF préparé par Awa (Yelema). Contact public : +225 05 46 46 46 46, assistances.ci@mtn.com (source mtn.ci, 16/10/2026).<br>FICTIF, document d&#39;entraînement interne. Personnes, numéros de dossier et chiffres internes inventés.</footer>
+</body>
+</html>
